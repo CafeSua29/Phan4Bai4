@@ -1,8 +1,9 @@
+import hbase.HBaseConnectionFactory
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
 import org.apache.hadoop.hbase.TableName
-import org.apache.hadoop.hbase.client.{Get, Put, Connection, ConnectionFactory, Table}
+import org.apache.hadoop.hbase.client.{Connection, ConnectionFactory, Get, Put, Table}
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.HBaseConfiguration
@@ -11,9 +12,7 @@ import org.apache.hadoop.hbase.client._
 import java.util
 
 object Main {
-  val spark = SparkSession.builder()
-    .appName("P4B4")
-    .getOrCreate()
+  val spark = SparkSession.builder().getOrCreate()
 
   import spark.implicits._
 
@@ -68,8 +67,10 @@ object Main {
     val batchPutSize = 100
 
     df.foreachPartition((rows: Iterator[Row]) => {
-      val conf = HBaseConfiguration.create()
-      val hbaseConnection = ConnectionFactory.createConnection(conf)
+//      val conf = HBaseConfiguration.create()
+//      val hbaseConnection = ConnectionFactory.createConnection(conf)
+
+      val hbaseConnection = HBaseConnectionFactory.createConnection()
 
       try {
         val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog", "pageviewlog_info"))
