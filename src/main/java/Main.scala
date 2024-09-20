@@ -1,3 +1,4 @@
+import config.ConfigPropertiesLoader
 import hbase.HBaseConnectionFactory
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types._
@@ -13,6 +14,11 @@ import java.util
 
 object Main {
   val spark = SparkSession.builder().getOrCreate()
+  spark.sparkContext.setLogLevel("WARN")
+
+  private val personInfoLogPath = ConfigPropertiesLoader.getYamlConfig.getProperty("personInfoLogPath")
+  private val personIdListLogPath = ConfigPropertiesLoader.getYamlConfig.getProperty("personIdListLogPath")
+  private val ageAnalysisPath = ConfigPropertiesLoader.getYamlConfig.getProperty("ageAnalysisPath")
 
   import spark.implicits._
 
