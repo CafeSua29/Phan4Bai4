@@ -72,7 +72,10 @@ object Main {
 
     val batchPutSize = 100
 
-    val hbaseConnection = HBaseConnectionFactory.createConnection()
+    val conf = HBaseConfiguration.create()
+    val hbaseConnection = ConnectionFactory.createConnection(conf)
+
+//    val hbaseConnection = HBaseConnectionFactory.createConnection()
     val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog", "pageviewlog_info"))
     val puts = new util.ArrayList[Put]()
 
