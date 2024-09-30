@@ -198,10 +198,10 @@ object Main {
     val batchPutSize = 100
 
     df.foreachPartition((rows: Iterator[Row]) => {
-//      val conf = HBaseConfiguration.create()
-//      val hbaseConnection = ConnectionFactory.createConnection(conf)
+      val conf = HBaseConfiguration.create()
+      val hbaseConnection = ConnectionFactory.createConnection(conf)
 
-      val hbaseConnection = HBaseConnectionFactory.createConnection()
+//      val hbaseConnection = HBaseConnectionFactory.createConnection()
 
       try {
         val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog", "pageviewlog_info"))
