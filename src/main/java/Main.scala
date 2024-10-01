@@ -10,8 +10,8 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client._
 import org.apache.spark.sql.datasources.hbase.HBaseTableCatalog
-import org.apache.spark.sql.execution.streaming.FileStreamSource.Timestamp
 
+import java.sql.Timestamp
 import java.util
 
 object Main {
