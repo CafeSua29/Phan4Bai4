@@ -12,6 +12,7 @@ import org.apache.hadoop.hbase.client._
 import org.apache.spark.sql.datasources.hbase.HBaseTableCatalog
 
 import java.sql.Timestamp
+import java.text.SimpleDateFormat
 import java.util
 
 object Main {
@@ -78,6 +79,7 @@ object Main {
 
     df.foreachPartition((rows: Iterator[Row]) => {
       val hbaseConnection = HBaseConnectionFactory.createConnection()
+      val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
       try {
         val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog", "pageviewlog_info"))
@@ -85,8 +87,8 @@ object Main {
         for (row <- rows) {
           val timeCreateRaw = row.getAs[Timestamp]("timeCreate")
           val cookieCreateRaw = row.getAs[Timestamp]("cookieCreate")
-          val timeCreate = "timeCreateRaw.toString"
-          val cookieCreate = "cookieCreateRaw.toString"
+          val timeCreate = dateFormat.format(timeCreateRaw)
+          val cookieCreate = dateFormat.format(cookieCreateRaw)
           val browserCode = row.getAs[Int]("browserCode")
           val browserVer = row.getAs[String]("browserVer")
           val osCode = row.getAs[Int]("osCode")
