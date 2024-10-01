@@ -72,7 +72,7 @@ object Main {
     df.printSchema()
 
     df = df
-      .withColumn("day", date_format(col("timeCreate"), "yyyy-MM-dd"))
+      //.withColumn("day", date_format(col("timeCreate"), "yyyy-MM-dd"))
       .repartition(5)
 
     val batchPutSize = 100
@@ -108,7 +108,7 @@ object Main {
           val geographic = row.getAs[Int]("geographic")
           val url = row.getAs[String]("url")
           val category = row.getAs[String]("category")
-          val day = row.getAs[String]("day")
+          //val day = row.getAs[String]("day")
 
           val put = new Put(Bytes.toBytes(guid))
           //put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("timeCreate"), Bytes.toBytes(timeCreate))
