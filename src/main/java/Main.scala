@@ -85,10 +85,10 @@ object Main {
         val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog", "pageviewlog_info"))
         val puts = new util.ArrayList[Put]()
         for (row <- rows) {
-          val timeCreateRaw = row.getAs[Timestamp]("timeCreate")
-          val cookieCreateRaw = row.getAs[Timestamp]("cookieCreate")
-          val timeCreate = dateFormat.format(timeCreateRaw)
-          val cookieCreate = dateFormat.format(cookieCreateRaw)
+//          val timeCreateRaw = row.getAs[Timestamp]("timeCreate")
+//          val cookieCreateRaw = row.getAs[Timestamp]("cookieCreate")
+//          val timeCreate = dateFormat.format(timeCreateRaw)
+//          val cookieCreate = dateFormat.format(cookieCreateRaw)
           val browserCode = row.getAs[Int]("browserCode")
           val browserVer = row.getAs[String]("browserVer")
           val osCode = row.getAs[Int]("osCode")
@@ -108,11 +108,11 @@ object Main {
           val geographic = row.getAs[Int]("geographic")
           val url = row.getAs[String]("url")
           val category = row.getAs[String]("category")
-          val day = row.getAs[String]("day")
+//          val day = row.getAs[String]("day")
 
           val put = new Put(Bytes.toBytes(guid))
-          put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("timeCreate"), Bytes.toBytes(timeCreate))
-          put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("cookieCreate"), Bytes.toBytes(cookieCreate))
+//          put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("timeCreate"), Bytes.toBytes(timeCreate))
+//          put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("cookieCreate"), Bytes.toBytes(cookieCreate))
           put.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("browserCode"), Bytes.toBytes(browserCode))
           put.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("browserVer"), Bytes.toBytes(browserVer))
           put.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("osCode"), Bytes.toBytes(osCode))
@@ -131,7 +131,7 @@ object Main {
           put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("geographic"), Bytes.toBytes(geographic))
           put.addColumn(Bytes.toBytes("producer"), Bytes.toBytes("url"), Bytes.toBytes(url))
           put.addColumn(Bytes.toBytes("producer"), Bytes.toBytes("category"), Bytes.toBytes(category))
-          put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("day"), Bytes.toBytes(day))
+          //put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("day"), Bytes.toBytes(day))
 
           puts.add(put)
           if (puts.size > batchPutSize) {
