@@ -83,10 +83,10 @@ object Main {
         val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog", "pageviewlog_info"))
         val puts = new util.ArrayList[Put]()
         for (row <- rows) {
-//          val timeCreateRaw = row.getAs[Timestamp]("timeCreate")
-//          val cookieCreateRaw = row.getAs[Timestamp]("cookieCreate")
-//          val timeCreate = timeCreateRaw.toString
-//          val cookieCreate = cookieCreateRaw.toString
+          val timeCreateRaw = row.getAs[Timestamp]("timeCreate")
+          val cookieCreateRaw = row.getAs[Timestamp]("cookieCreate")
+          val timeCreate = "timeCreateRaw.toString"
+          val cookieCreate = "cookieCreateRaw.toString"
           val browserCode = row.getAs[Int]("browserCode")
           val browserVer = row.getAs[String]("browserVer")
           val osCode = row.getAs[Int]("osCode")
@@ -109,8 +109,8 @@ object Main {
           val day = row.getAs[String]("day")
 
           val put = new Put(Bytes.toBytes(guid))
-//          put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("timeCreate"), Bytes.toBytes(timeCreate))
-//          put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("cookieCreate"), Bytes.toBytes(cookieCreate))
+          put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("timeCreate"), Bytes.toBytes(timeCreate))
+          put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("cookieCreate"), Bytes.toBytes(cookieCreate))
           put.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("browserCode"), Bytes.toBytes(browserCode))
           put.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("browserVer"), Bytes.toBytes(browserVer))
           put.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("osCode"), Bytes.toBytes(osCode))
