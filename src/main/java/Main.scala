@@ -10,6 +10,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client._
 import org.apache.spark.sql.datasources.hbase.HBaseTableCatalog
+import org.apache.spark.sql.execution.streaming.FileStreamSource.Timestamp
 
 import java.util
 
@@ -82,8 +83,8 @@ object Main {
         val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog", "pageviewlog_info"))
         val puts = new util.ArrayList[Put]()
         for (row <- rows) {
-          val timeCreate = row.getAs[String]("timeCreate")
-          val cookieCreate = row.getAs[String]("cookieCreate")
+          val timeCreate = row.getAs[Timestamp]("timeCreate").toString
+          val cookieCreate = row.getAs[Timestamp]("cookieCreate").toString
           val browserCode = row.getAs[Int]("browserCode")
           val browserVer = row.getAs[String]("browserVer")
           val osCode = row.getAs[Int]("osCode")
