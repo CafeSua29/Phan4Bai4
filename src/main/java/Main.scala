@@ -1,6 +1,6 @@
 import config.ConfigPropertiesLoader
 import hbase.HBaseConnectionFactory
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.{Row, SparkSession, DataFrame}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
 import org.apache.hadoop.hbase.{HBaseConfiguration, NamespaceDescriptor, TableName}
@@ -8,7 +8,8 @@ import org.apache.hadoop.hbase.client.{Connection, ConnectionFactory, Get, Put, 
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.client._
-import org.apache.spark.sql.datasources.hbase.HBaseTableCatalog
+import org.apache.hadoop.hbase.spark.HBaseContext
+import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog
 
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
