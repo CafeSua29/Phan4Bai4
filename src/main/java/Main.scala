@@ -39,7 +39,8 @@ object Main {
         println(s"Namespace $inpNamespace created.")
     }
 
-    if (admin.tableExists(tableName)) {
+    val tableExists = admin.tableExists(tableName)
+    if (tableExists) {
       println(s"Table $tableName exists. Deleting...")
       admin.disableTable(tableName)
       admin.deleteTable(tableName)
