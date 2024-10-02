@@ -228,13 +228,13 @@ object Main {
 //  }
 
   def main(args: Array[String]): Unit = {
-    val conf = HBaseConfiguration.create()
-    conf.set("hbase.zookeeper.quorum", "localhost:2181")
-
-    val connection = ConnectionFactory.createConnection(conf)
-
-    val inpNamespace = "pageviewlog"
-    val inpTableName = "pageviewlog_info"
+//    val conf = HBaseConfiguration.create()
+//    conf.set("hbase.zookeeper.quorum", "localhost:2181")
+//
+//    val connection = ConnectionFactory.createConnection(conf)
+//
+//    val inpNamespace = "pageviewlog"
+//    val inpTableName = "pageviewlog_info"
 
     //createReplaceTable(connection, inpNamespace, inpTableName)
     createDataFrameAndPutToHDFS()
