@@ -24,20 +24,9 @@ object Main {
 
   import spark.implicits._
 
-  private def createReplaceTable(connection: Connection, inpNamespace: String, inpTableName: String): Unit = {
+  private def createReplaceTable(connection: Connection, inpTableName: String): Unit = {
     val admin = connection.getAdmin
     val tableName = TableName.valueOf(inpTableName)
-
-    try {
-      admin.getNamespaceDescriptor(inpNamespace)
-      println(s"Namespace $inpNamespace already exists.")
-    } catch {
-      case _: Exception =>
-        println(s"Namespace $inpNamespace doesn't exist. Creating namespace...")
-        val namespaceDescriptor = NamespaceDescriptor.create(inpNamespace).build()
-        admin.createNamespace(namespaceDescriptor)
-        println(s"Namespace $inpNamespace created.")
-    }
 
     val tableExists = admin.tableExists(tableName)
     if (tableExists) {
@@ -115,7 +104,7 @@ object Main {
 
     def catalog =
       s"""{
-         |"table":{"namespace":"pageviewlog", "name":"pageviewlog_info"},
+         |"table":{"namespace":"default", "name":"pageviewlog"},
          |"rowkey":"guid",
          |"columns":{
          |"guid":{"cf":"rowkey", "col":"guid", "type":"long"},
@@ -230,10 +219,9 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     val hbaseConnection = HBaseConnectionFactory.createConnection()
-    val inpNamespace = "pageviewlog"
-    val inpTableName = "pageviewlog_info"
+    val inpTableName = "pageviewlog"
 
-    createReplaceTable(hbaseConnection, inpNamespace, inpTableName)
+    createReplaceTable(hbaseConnection, inpTableName)
     createDataFrameAndPutToHDFS()
     readHDFSThenPutToHBase()
     //readHBaseThenWriteToHDFS()
