@@ -167,36 +167,32 @@ object Main {
         val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog"))
         val puts = new util.ArrayList[Put]()
         for (row <- rows) {
-          var timeCreate = row.getAs[Timestamp]("timeCreate").toString
-
-          if (timeCreate == null)
-            timeCreate = "-1"
-
-          var cookieCreate = row.getAs[Timestamp]("cookieCreate").toString
-
-          if (cookieCreate == null)
-            cookieCreate = "-1"
-
-          var browserCode = row.getAs[Int]("browserCode")
-          var browserVer = row.getAs[String]("browserVer")
-          var osCode = row.getAs[Int]("osCode")
+          val timeCreate = row.getAs[Timestamp]("timeCreate").toString
+          val cookieCreate = row.getAs[Timestamp]("cookieCreate").toString
+          val browserCode = row.getAs[Int]("browserCode")
+          val browserVer = row.getAs[String]("browserVer")
+          val osCode = row.getAs[Int]("osCode")
           var osVer = row.getAs[String]("osVer")
-          var ip = row.getAs[Long]("ip")
-          var locId = row.getAs[Int]("locId")
-          var domain = row.getAs[String]("domain")
-          var siteId = row.getAs[Int]("siteId")
-          var cId = row.getAs[Int]("cId")
-          var path = row.getAs[String]("path")
-          var referer = row.getAs[String]("referer")
-          var guid = row.getAs[Long]("guid")
-          var flashVersion = row.getAs[String]("flashVersion")
-          var jre = row.getAs[String]("jre")
-          var sr = row.getAs[String]("sr")
-          var sc = row.getAs[String]("sc")
-          var geographic = row.getAs[Int]("geographic")
-          var url = row.getAs[String]("url")
-          var category = row.getAs[String]("category")
-          var day = row.getAs[String]("day")
+
+          if (osVer == null)
+            osVer = "-1"
+
+          val ip = row.getAs[Long]("ip")
+          val locId = row.getAs[Int]("locId")
+          val domain = row.getAs[String]("domain")
+          val siteId = row.getAs[Int]("siteId")
+          val cId = row.getAs[Int]("cId")
+          val path = row.getAs[String]("path")
+          val referer = row.getAs[String]("referer")
+          val guid = row.getAs[Long]("guid")
+          val flashVersion = row.getAs[String]("flashVersion")
+          val jre = row.getAs[String]("jre")
+          val sr = row.getAs[String]("sr")
+          val sc = row.getAs[String]("sc")
+          val geographic = row.getAs[Int]("geographic")
+          val url = row.getAs[String]("url")
+          val category = row.getAs[String]("category")
+          val day = row.getAs[String]("day")
 
           val put = new Put(Bytes.toBytes(guid))
           put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("timeCreate"), Bytes.toBytes(timeCreate))
