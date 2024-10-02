@@ -228,6 +228,7 @@ object Main {
         }
       } finally {
         hbaseConnection.close()
+        println("done")
       }
     })
   }
