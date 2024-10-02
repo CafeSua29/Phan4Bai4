@@ -17,7 +17,7 @@ import java.util
 
 object Main {
   val spark = SparkSession.builder().getOrCreate()
-  spark.sparkContext.setLogLevel("WARN")
+  spark.sparkContext.setLogLevel("DEBUG")
 
 //  private val personInfoLogPath = ConfigPropertiesLoader.getYamlConfig.getProperty("personInfoLogPath")
 //  private val personIdListLogPath = ConfigPropertiesLoader.getYamlConfig.getProperty("personIdListLogPath")
