@@ -236,7 +236,7 @@ object Main {
     val inpNamespace = "pageviewlog"
     val inpTableName = "pageviewlog_info"
 
-    createReplaceTable(connection, inpNamespace, inpTableName)
+    //createReplaceTable(connection, inpNamespace, inpTableName)
     createDataFrameAndPutToHDFS()
     readHDFSThenPutToHBase()
     //readHBaseThenWriteToHDFS()
