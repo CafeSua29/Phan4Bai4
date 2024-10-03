@@ -269,6 +269,38 @@ object Main {
     urls.toList
   }
 
+  def mostUsedIpsByGuid(table: Table, guid: Long): Seq[(String, Int)] = {
+    val scan = new Scan()
+    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("ip"))
+    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("guid"))
+
+    // Add a filter to match the GUID
+    val guidFilter = new SingleColumnValueFilter(
+      Bytes.toBytes("consumer"),
+      Bytes.toBytes("guid"),
+      CompareFilter.CompareOp.EQUAL,
+      Bytes.toBytes(guid)
+    )
+
+    scan.setFilter(guidFilter)
+
+    // Scan the table and collect IPs
+    val ipCounts = scala.collection.mutable.Map[String, Int]()
+    val scanner = table.getScanner(scan)
+
+    var result = scanner.next()
+    while (result != null) {
+      val ip = Bytes.toString(result.getValue(Bytes.toBytes("consumer"), Bytes.toBytes("ip")))
+      ipCounts(ip) = ipCounts.getOrElse(ip, 0) + 1
+      result = scanner.next()
+    }
+
+    scanner.close()
+
+    // Sort IPs by occurrence count in descending order
+    ipCounts.toSeq.sortBy(-_._2)
+  }
+
   def main(args: Array[String]): Unit = {
     val hbaseConnection = HBaseConnectionFactory.createConnection()
     val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog"))
@@ -281,8 +313,11 @@ object Main {
 
     // 4.1 List URLs by GUID and Date
     val urls = listUrlsByGuidAndDate(table, guid, date)
-
     println(s"URLs accessed by GUID $guid on $date: $urls")
+
+    // 4.2: Most used IPs by GUID
+    val ipCounts = mostUsedIpsByGuid(table, guid)
+    println(s"Most used IPs by GUID $guid: $ipCounts")
 
     //readHBaseThenWriteToHDFS()
   }
