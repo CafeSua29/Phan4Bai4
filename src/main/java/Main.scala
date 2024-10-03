@@ -349,6 +349,62 @@ object Main {
     latestTime
   }
 
+  def filterGuidsByOsBrowserTime(
+                                  table: Table, osCode: Int, browserCode: Int, startTime: String, endTime: String): Seq[Long] = {
+
+    val scan = new Scan()
+    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("guid"))
+    scan.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("osCode"))
+    scan.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("browserCode"))
+    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("timeCreate"))
+
+    // Add filters for osCode and browserCode
+    val osCodeFilter = new SingleColumnValueFilter(
+      Bytes.toBytes("hardware"),
+      Bytes.toBytes("osCode"),
+      CompareFilter.CompareOp.EQUAL,
+      Bytes.toBytes(osCode)
+    )
+    val browserCodeFilter = new SingleColumnValueFilter(
+      Bytes.toBytes("hardware"),
+      Bytes.toBytes("browserCode"),
+      CompareFilter.CompareOp.EQUAL,
+      Bytes.toBytes(browserCode)
+    )
+
+    // Add filter for timeCreate range
+    val timeRangeFilter = new org.apache.hadoop.hbase.filter.FilterList(
+      new org.apache.hadoop.hbase.filter.SingleColumnValueFilter(
+        Bytes.toBytes("consumer"),
+        Bytes.toBytes("timeCreate"),
+        CompareFilter.CompareOp.GREATER_OR_EQUAL,
+        Bytes.toBytes(startTime)
+      ),
+      new org.apache.hadoop.hbase.filter.SingleColumnValueFilter(
+        Bytes.toBytes("consumer"),
+        Bytes.toBytes("timeCreate"),
+        CompareFilter.CompareOp.LESS_OR_EQUAL,
+        Bytes.toBytes(endTime)
+      )
+    )
+
+    scan.setFilter(new org.apache.hadoop.hbase.filter.FilterList(osCodeFilter, browserCodeFilter, timeRangeFilter))
+
+    // Scan the table and collect matching GUIDs
+    val guids = scala.collection.mutable.ListBuffer[Long]()
+    val scanner = table.getScanner(scan)
+
+    var result = scanner.next()
+    while (result != null) {
+      val guid = Bytes.toLong(result.getValue(Bytes.toBytes("consumer"), Bytes.toBytes("guid")))
+      guids += guid
+      result = scanner.next()
+    }
+
+    scanner.close()
+    guids.toList
+  }
+
   def main(args: Array[String]): Unit = {
     val hbaseConnection = HBaseConnectionFactory.createConnection()
     val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog"))
@@ -372,6 +428,10 @@ object Main {
     // 4.3: Latest access time by GUID
     val latestTime = latestAccessTimeByGuid(table, guid)
     println(s"Latest access time by GUID $guid: $latestTime")
+
+    // 4.4: Filter GUIDs by osCode, browserCode, and timeCreate range
+    val filteredGuids = filterGuidsByOsBrowserTime(table, osCode = 10, browserCode = 16, "2016-11-01", "2016-11-02")
+    println(s"Filtered GUIDs: $filteredGuids")
 
     //readHBaseThenWriteToHDFS()
   }
