@@ -11,6 +11,7 @@ import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.{CompareFilter, RegexStringComparator, SingleColumnValueFilter}
 import org.apache.hadoop.hbase.spark.HBaseContext
 import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog
+import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog.table
 
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
@@ -235,59 +236,54 @@ object Main {
     })
   }
 
-//  def readUrlsFromScanResult(scan: Scan)(implicit table: Table): Seq[String] = {
-//    val scanner: ResultScanner = table.getScanner(scan)
-//    val urls = scala.collection.mutable.ListBuffer[String]()
-//
-//    var result: Result = scanner.next()
-//    while (result != null) {
-//      val domain = Bytes.toString(result.getValue(Bytes.toBytes("cf"), Bytes.toBytes("domain")))
-//      val path = Bytes.toString(result.getValue(Bytes.toBytes("cf"), Bytes.toBytes("path")))
-//      urls += s"$domain$path"
-//      result = scanner.next()
-//    }
-//
-//    scanner.close()
-//    urls.toList
-//  }
-//
-//  def listUrlsByGuidAndDate(tableName: String, guid: Long, date: String): Seq[String] = {
-//    val scan = new Scan()
-//    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("guid"))
-//    scan.setFilter(new SingleColumnValueFilter(
-//      Bytes.toBytes("consumer"),
-//      Bytes.toBytes("guid"),
-//      CompareFilter.CompareOp.EQUAL,
-//      Bytes.toBytes(guid)
-//    ))
-//
-//    scan.setFilter(new SingleColumnValueFilter(
-//      Bytes.toBytes("consumer"),
-//      Bytes.toBytes("timeCreate"),
-//      CompareFilter.CompareOp.EQUAL,
-//      new RegexStringComparator(s"$date.*")
-//    ))
-//
-//    // Assume you have the method to read from HBase and process Scan results to fetch URLs
-//    val urls = readUrlsFromScanResult(scan)
-//    urls
-//  }
+  def listUrlsByGuidAndDate(table: Table, guid: Long, date: String): Seq[String] = {
+    // Create a scan object with the necessary filters
+    val scan = new Scan()
+    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("guid"))
+    scan.addColumn(Bytes.toBytes("producer"), Bytes.toBytes("domain"))
+    scan.addColumn(Bytes.toBytes("producer"), Bytes.toBytes("path"))
+
+    // Add a filter to match the GUID
+    val guidFilter = new org.apache.hadoop.hbase.filter.SingleColumnValueFilter(
+      Bytes.toBytes("consumer"),
+      Bytes.toBytes("guid"),
+      org.apache.hadoop.hbase.filter.CompareFilter.CompareOp.EQUAL,
+      Bytes.toBytes(guid)
+    )
+
+    scan.setFilter(guidFilter)
+
+    // Scan the table and read URLs
+    val urls = scala.collection.mutable.ListBuffer[String]()
+    val scanner = table.getScanner(scan)
+
+    var result = scanner.next()
+    while (result != null) {
+      val domain = Bytes.toString(result.getValue(Bytes.toBytes("producer"), Bytes.toBytes("domain")))
+      val path = Bytes.toString(result.getValue(Bytes.toBytes("producer"), Bytes.toBytes("path")))
+      urls += s"$domain/$path"
+      result = scanner.next()
+    }
+
+    scanner.close()
+    urls.toList
+  }
 
   def main(args: Array[String]): Unit = {
-//    val conf = HBaseConfiguration.create()
-//    conf.set("hbase.zookeeper.quorum", "localhost:2181")
-//
-//    val connection = ConnectionFactory.createConnection(conf)
-//
-//    val inpNamespace = "pageviewlog"
-//    val inpTableName = "pageviewlog_info"
+    val hbaseConnection = HBaseConnectionFactory.createConnection()
+    val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog"))
+    val guid: Long = 3901120742885229173L
+    val date: String = "2016-10-06"
+
 
     //createReplaceTable(connection, inpNamespace, inpTableName)
     createDataFrameAndPutToHDFS()
     readHDFSThenPutToHBase()
 
-    //4.1
-    //listUrlsByGuidAndDate()
+    // 4.1 List URLs by GUID and Date
+    val urls = listUrlsByGuidAndDate(table, guid, date)
+
+    println(s"URLs accessed by GUID $guid on $date: $urls")
 
     //readHBaseThenWriteToHDFS()
   }
