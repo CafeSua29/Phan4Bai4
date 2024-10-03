@@ -521,7 +521,7 @@ object Main {
     println(s"Latest access time by GUID $guid: $latestTime")
 
     // 4.4: Filter GUIDs by osCode, browserCode, and timeCreate range
-    val filteredGuids = filterGuidsByOsBrowserTime(table, osCode = 1, browserCode = 14, "2018-08-09", "2024-08-10")
+    val filteredGuids = filterGuidsByOsBrowserTime(table, osCode = 10, browserCode = 4, "2018-08-05 09:55:19", "2018-08-15 09:55:19")
     println(s"Filtered GUIDs: $filteredGuids")
 
     //readHBaseThenWriteToHDFS()
