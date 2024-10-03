@@ -1,6 +1,6 @@
 import config.ConfigPropertiesLoader
 import hbase.HBaseConnectionFactory
-import org.apache.spark.sql.{Row, SparkSession, DataFrame}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
 import org.apache.hadoop.hbase.{HBaseConfiguration, NamespaceDescriptor, TableName}
@@ -8,6 +8,7 @@ import org.apache.hadoop.hbase.client.{Connection, ConnectionFactory, Get, Put, 
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.client._
+import org.apache.hadoop.hbase.filter.{CompareFilter, RegexStringComparator, SingleColumnValueFilter}
 import org.apache.hadoop.hbase.spark.HBaseContext
 import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog
 
@@ -208,6 +209,7 @@ object Main {
           put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("cId"), Bytes.toBytes(cId))
           put.addColumn(Bytes.toBytes("producer"), Bytes.toBytes("path"), Bytes.toBytes(path))
           put.addColumn(Bytes.toBytes("producer"), Bytes.toBytes("referer"), Bytes.toBytes(referer))
+          put.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("guid"), Bytes.toBytes(guid))
           put.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("flashVersion"), Bytes.toBytes(flashVersion))
           put.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("jre"), Bytes.toBytes(jre))
           put.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("sr"), Bytes.toBytes(sr))
@@ -233,6 +235,44 @@ object Main {
     })
   }
 
+//  def readUrlsFromScanResult(scan: Scan)(implicit table: Table): Seq[String] = {
+//    val scanner: ResultScanner = table.getScanner(scan)
+//    val urls = scala.collection.mutable.ListBuffer[String]()
+//
+//    var result: Result = scanner.next()
+//    while (result != null) {
+//      val domain = Bytes.toString(result.getValue(Bytes.toBytes("cf"), Bytes.toBytes("domain")))
+//      val path = Bytes.toString(result.getValue(Bytes.toBytes("cf"), Bytes.toBytes("path")))
+//      urls += s"$domain$path"
+//      result = scanner.next()
+//    }
+//
+//    scanner.close()
+//    urls.toList
+//  }
+//
+//  def listUrlsByGuidAndDate(tableName: String, guid: Long, date: String): Seq[String] = {
+//    val scan = new Scan()
+//    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("guid"))
+//    scan.setFilter(new SingleColumnValueFilter(
+//      Bytes.toBytes("consumer"),
+//      Bytes.toBytes("guid"),
+//      CompareFilter.CompareOp.EQUAL,
+//      Bytes.toBytes(guid)
+//    ))
+//
+//    scan.setFilter(new SingleColumnValueFilter(
+//      Bytes.toBytes("consumer"),
+//      Bytes.toBytes("timeCreate"),
+//      CompareFilter.CompareOp.EQUAL,
+//      new RegexStringComparator(s"$date.*")
+//    ))
+//
+//    // Assume you have the method to read from HBase and process Scan results to fetch URLs
+//    val urls = readUrlsFromScanResult(scan)
+//    urls
+//  }
+
   def main(args: Array[String]): Unit = {
 //    val conf = HBaseConfiguration.create()
 //    conf.set("hbase.zookeeper.quorum", "localhost:2181")
@@ -245,6 +285,10 @@ object Main {
     //createReplaceTable(connection, inpNamespace, inpTableName)
     createDataFrameAndPutToHDFS()
     readHDFSThenPutToHBase()
+
+    //4.1
+    //listUrlsByGuidAndDate()
+
     //readHBaseThenWriteToHDFS()
   }
 }
