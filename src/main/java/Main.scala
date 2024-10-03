@@ -269,6 +269,47 @@ object Main {
     urls.toList
   }
 
+//  def mostUsedIpsByGuid(table: Table, guid: Long): Seq[(String, Int)] = {
+//    val scan = new Scan()
+//    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("ip"))
+//    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("guid"))
+//
+//    // Add a filter to match the GUID
+//    val guidFilter = new SingleColumnValueFilter(
+//      Bytes.toBytes("consumer"),
+//      Bytes.toBytes("guid"),
+//      CompareFilter.CompareOp.EQUAL,
+//      Bytes.toBytes(guid)
+//    )
+//
+//    scan.setFilter(guidFilter)
+//
+//    // Scan the table and collect IPs
+//    val ipCounts = scala.collection.mutable.Map[String, Int]()
+//    val scanner = table.getScanner(scan)
+//
+//    var result = scanner.next()
+//    while (result != null) {
+//      val ip = Bytes.toString(result.getValue(Bytes.toBytes("consumer"), Bytes.toBytes("ip")))
+//      ipCounts(ip) = ipCounts.getOrElse(ip, 0) + 1
+//      result = scanner.next()
+//    }
+//
+//    scanner.close()
+//
+//    // Sort IPs by occurrence count in descending order
+//    ipCounts.toSeq.sortBy(-_._2)
+//  }
+
+  def safeParseIp(ipStr: String): Option[Long] = {
+    try {
+      Some(ipStr.toLong)
+    } catch {
+      case _: NumberFormatException => None // If the IP is malformed, ignore it
+    }
+  }
+
+  // Method to get most-used IPs by GUID
   def mostUsedIpsByGuid(table: Table, guid: Long): Seq[(String, Int)] = {
     val scan = new Scan()
     scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("ip"))
@@ -290,8 +331,14 @@ object Main {
 
     var result = scanner.next()
     while (result != null) {
-      val ip = Bytes.toString(result.getValue(Bytes.toBytes("consumer"), Bytes.toBytes("ip")))
-      ipCounts(ip) = ipCounts.getOrElse(ip, 0) + 1
+      val ipStr = Bytes.toString(result.getValue(Bytes.toBytes("consumer"), Bytes.toBytes("ip")))
+      // Safely parse the IP as a long, and skip if invalid
+      safeParseIp(ipStr) match {
+        case Some(ip) =>
+          val ipAsStr = ip.toString // Convert the valid IP back to string
+          ipCounts(ipAsStr) = ipCounts.getOrElse(ipAsStr, 0) + 1
+        case None => // Skip malformed IP
+      }
       result = scanner.next()
     }
 
