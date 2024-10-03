@@ -8,7 +8,7 @@ import org.apache.hadoop.hbase.client.{Connection, ConnectionFactory, Get, Put, 
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.client._
-import org.apache.hadoop.hbase.filter.{CompareFilter, RegexStringComparator, SingleColumnValueFilter}
+import org.apache.hadoop.hbase.filter.{CompareFilter, FilterList, RegexStringComparator, SingleColumnValueFilter}
 import org.apache.hadoop.hbase.spark.HBaseContext
 import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog
 import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog.table
@@ -349,6 +349,14 @@ object Main {
     latestTime
   }
 
+  def safeParseLong(valueStr: String): Option[Long] = {
+    try {
+      Some(valueStr.toLong)
+    } catch {
+      case _: NumberFormatException => None // Return None if the value is invalid
+    }
+  }
+
   def filterGuidsByOsBrowserTime(
                                   table: Table, osCode: Int, browserCode: Int, startTime: String, endTime: String): Seq[Long] = {
 
@@ -395,15 +403,98 @@ object Main {
     val scanner = table.getScanner(scan)
 
     var result = scanner.next()
+
     while (result != null) {
-      val guid = Bytes.toLong(result.getValue(Bytes.toBytes("consumer"), Bytes.toBytes("guid")))
-      guids += guid
+      val guidStr = Bytes.toString(result.getValue(Bytes.toBytes("consumer"), Bytes.toBytes("guid")))
+
+      // Safely parse the GUID, skip if invalid
+      safeParseLong(guidStr) match {
+        case Some(guid) => guids += guid
+        case None => // Skip invalid GUID
+      }
+
       result = scanner.next()
     }
 
     scanner.close()
     guids.toList
   }
+
+  // Method to find GUIDs by osCode, browserCode, and a specific time range
+//  def filterGuidsByOsBrowserTime(
+//                                           table: Table,
+//                                           osCode: Int,
+//                                           browserCode: Int,
+//                                           startTime: Long,
+//                                           endTime: Long
+//                                         ): Seq[Long] = {
+//    val scan = new Scan()
+//    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("guid"))
+//    scan.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("osCode"))
+//    scan.addColumn(Bytes.toBytes("hardware"), Bytes.toBytes("browserCode"))
+//    scan.addColumn(Bytes.toBytes("consumer"), Bytes.toBytes("timeCreate"))
+//
+//    // Filter for osCode, browserCode, and timeCreate range
+//    val osFilter = new SingleColumnValueFilter(
+//      Bytes.toBytes("hardware"),
+//      Bytes.toBytes("osCode"),
+//      CompareFilter.CompareOp.EQUAL,
+//      Bytes.toBytes(osCode)
+//    )
+//
+//    val browserFilter = new SingleColumnValueFilter(
+//      Bytes.toBytes("hardware"),
+//      Bytes.toBytes("browserCode"),
+//      CompareFilter.CompareOp.EQUAL,
+//      Bytes.toBytes(browserCode)
+//    )
+//
+//    val timeRangeFilter = new FilterList(FilterList.Operator.MUST_PASS_ALL)
+//    val startTimeFilter = new SingleColumnValueFilter(
+//      Bytes.toBytes("consumer"),
+//      Bytes.toBytes("timeCreate"),
+//      CompareFilter.CompareOp.GREATER_OR_EQUAL,
+//      Bytes.toBytes(startTime)
+//    )
+//
+//    val endTimeFilter = new SingleColumnValueFilter(
+//      Bytes.toBytes("consumer"),
+//      Bytes.toBytes("timeCreate"),
+//      CompareFilter.CompareOp.LESS_OR_EQUAL,
+//      Bytes.toBytes(endTime)
+//    )
+//
+//    timeRangeFilter.addFilter(startTimeFilter)
+//    timeRangeFilter.addFilter(endTimeFilter)
+//
+//    val filterList = new FilterList(FilterList.Operator.MUST_PASS_ALL)
+//    filterList.addFilter(osFilter)
+//    filterList.addFilter(browserFilter)
+//    filterList.addFilter(timeRangeFilter)
+//
+//    scan.setFilter(filterList)
+//
+//    // Scan and collect valid GUIDs
+//    val guids = scala.collection.mutable.ListBuffer[Long]()
+//    val scanner = table.getScanner(scan)
+//
+//    var result = scanner.next()
+//    while (result != null) {
+//      val guidStr = Bytes.toString(result.getValue(Bytes.toBytes("consumer"), Bytes.toBytes("guid")))
+//
+//      // Safely parse the GUID, skip if invalid
+//      safeParseLong(guidStr) match {
+//        case Some(guid) => guids += guid
+//        case None => // Skip invalid GUID
+//      }
+//
+//      result = scanner.next()
+//    }
+//
+//    scanner.close()
+//
+//    guids.toSeq
+//  }
 
   def main(args: Array[String]): Unit = {
     val hbaseConnection = HBaseConnectionFactory.createConnection()
@@ -430,7 +521,7 @@ object Main {
     println(s"Latest access time by GUID $guid: $latestTime")
 
     // 4.4: Filter GUIDs by osCode, browserCode, and timeCreate range
-    val filteredGuids = filterGuidsByOsBrowserTime(table, osCode = 10, browserCode = 16, "2016-11-01", "2016-11-02")
+    val filteredGuids = filterGuidsByOsBrowserTime(table, osCode = 1, browserCode = 14, "2018-08-09", "2024-08-10")
     println(s"Filtered GUIDs: $filteredGuids")
 
     //readHBaseThenWriteToHDFS()
