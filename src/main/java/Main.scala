@@ -272,9 +272,8 @@ object Main {
   def main(args: Array[String]): Unit = {
     val hbaseConnection = HBaseConnectionFactory.createConnection()
     val table = hbaseConnection.getTable(TableName.valueOf("pageviewlog"))
-    val guid: Long = 3901120742885229173L
-    val date: String = "2016-10-06"
-
+    val guid: Long = 8813685310712123492L
+    val date: String = "2018-08-10"
 
     //createReplaceTable(connection, inpNamespace, inpTableName)
     createDataFrameAndPutToHDFS()
