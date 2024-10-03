@@ -365,6 +365,7 @@ object Main {
     // 4.2: Most used IPs by GUID
     val ipCounts = mostUsedIpsByGuid(table, guid)
     println(s"Most used IPs by GUID $guid: $ipCounts")
+    println(s"${ipCounts.size}")
 
     //readHBaseThenWriteToHDFS()
   }
